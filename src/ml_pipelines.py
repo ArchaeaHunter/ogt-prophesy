@@ -15,7 +15,7 @@ from sklearn.ensemble import RandomForestRegressor
 alphas = np.logspace(-10, 10, num=100)
 models = {
     "baseline" : DummyRegressor(),
-    "basic_linear_model" : Pipeline([
+    "linear_model" : Pipeline([
         ('scaler',StandardScaler()),
         ('regression',LinearRegression())]),
     "ridge" : Pipeline([
