@@ -240,11 +240,11 @@ class PredictorOGT(PredictorOGTBase) :
             sns.boxplot(coefs)
             ax.xaxis.grid(True)
             ax.yaxis.grid(True)
+            ax.set(xlabel = "Features",
+                    ylabel="Regression coefficients",
+                    title=f"Boxplot of regression coefficients for each features ({self.exp_name})")
 
             if self.working_folder is not None : 
-                ax.set(xlabel = "Features",
-                    ylabel="Regression coefficients",
-                    title=f"{self.exp_name}")
                 f.savefig(os.path.join(self.working_folder,f"plot_linear_coef_{self.exp_name}.png")) 
                 plt.close('all')
 
