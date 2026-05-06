@@ -18,10 +18,9 @@ class Toolbox:
 
 
 class PredictorOGTBase(Toolbox) : 
-    def __init__(self, data, target, target_label, model, cv,working_folder, exp_name, groups=None):
+    def __init__(self, data, target, model, cv,working_folder, exp_name, groups=None):
         super().__init__(working_folder)
         self.data = data
-        self.target_label = target_label
         self.target = np.ravel(target)
         self.target_pred = None 
         self.model = model
@@ -39,11 +38,10 @@ class PredictorOGTBase(Toolbox) :
         sns.stripplot(self.target,color=".3")
         ax.xaxis.grid(True)
         ax.set(ylabel="")
+        ax.set(xlabel = "OGT",title=f"Boxplot of repartition for target ({self.exp_name})")
 
         if self.working_folder is not None : 
-            ax.set(xlabel = self.target_label,title=f"{self.exp_name}")
             f.savefig(os.path.join(self.working_folder,"boxplot_target.png"))
-            plt.close('all')
 
     def boxplot_data(self) : 
         sns.set_theme(style="ticks")
@@ -51,21 +49,20 @@ class PredictorOGTBase(Toolbox) :
         sns.boxplot(self.data)
         ax.xaxis.grid(True)
         ax.set(ylabel="")
+        ax.set(xlabel = "Features",
+            ylabel="Frequencies (log scale)",
+            title=f"Boxplot of repartition for data ({self.exp_name})")
 
         if self.working_folder is not None : 
-            ax.set(xlabel = "Features",
-                    ylabel="Frequencies (log scale)",
-                    title=f"{self.exp_name}")
             f.savefig(os.path.join(self.working_folder,"boxplot_data.png"))
-            plt.close('all')
 
     def histogram_data(self) : 
         ax = self.data.hist(figsize = (self.len_features,self.len_features))
         fig = ax[0][0].get_figure()
+        fig.suptitle("Histogram of values for data features",fontsize=25, y=0.92)
 
         if self.working_folder is not None : 
             fig.savefig(os.path.join(self.working_folder,"histogram_data.png"))
-            plt.close('all')
         
     def show_splits(self) : 
         """
@@ -127,17 +124,21 @@ class PredictorOGTBase(Toolbox) :
 
 
 class PredictorOGT(PredictorOGTBase) : 
-    def __init__(self, data, target, target_label, model, cv, working_folder, exp_name, groups=None):
-        super().__init__(data, target, target_label, model, cv, working_folder, exp_name, groups)
+    def __init__(self, data, target, model, cv, working_folder, exp_name, groups=None):
+        super().__init__(data, target, model, cv, working_folder, exp_name, groups)
         self.cv_results = None
         self.results_models = None
 
     def run_visualisation_data(self) :
-        self.makedir_soft() 
+        if self.working_folder is not None : 
+            self.makedir_soft() 
         self.boxplot_data()
         self.boxplot_target()
         self.histogram_data()
-        plt.close('all')
+        if self.working_folder is not None : 
+            plt.close('all')
+        
+        
 
     def search_hyperparams(self,param_grid,verbosity=False): 
         if param_grid is not None : 
@@ -195,6 +196,13 @@ class PredictorOGT(PredictorOGTBase) :
                                          scoring=["neg_mean_absolute_error","r2"])
 
         return self.cv_results
+    
+    def print_error_estimation(self) : 
+        result = self.estimate_error() 
+        print("Mean fit time :", result["fit_time"].mean())
+        print("Mean score time :", result["score_time"].mean())
+        print("Mean of error prediction for all CV splits :", - result["test_neg_mean_absolute_error"].mean(), "°C") 
+        print("Mean of r2 for all CV splits :", result["test_r2"].mean())
 
     def permutation_importance_test(self) : 
         train_index, test_index = next(self.cv.split(self.data,groups=self.groups))
