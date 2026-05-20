@@ -1,5 +1,8 @@
 """
 Utilities to automatize ML analysis on a vector to predict OGT. 
+
+© 2024 by Raphaël Fruchard is licensed under CC BY-NC-SA 4.0.
+To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-sa/4.0/
 """
 
 import seaborn as sns
